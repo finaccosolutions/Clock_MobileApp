@@ -1,12 +1,6 @@
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Dimensions, Animated } from 'react-native';
+import { useState, useEffect, useRef } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  Easing,
-} from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
@@ -15,9 +9,9 @@ const CLOCK_SIZE = Math.min(width * 0.8, 320);
 export default function ClockScreen() {
   const insets = useSafeAreaInsets();
   const [time, setTime] = useState(new Date());
-  const secondRotation = useSharedValue(0);
-  const minuteRotation = useSharedValue(0);
-  const hourRotation = useSharedValue(0);
+  const secondRotation = useRef(new Animated.Value(0)).current;
+  const minuteRotation = useRef(new Animated.Value(0)).current;
+  const hourRotation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -28,40 +22,27 @@ export default function ClockScreen() {
       const minutes = now.getMinutes();
       const hours = now.getHours() % 12;
 
-      secondRotation.value = withTiming((seconds * 6) % 360, {
+      Animated.timing(secondRotation, {
+        toValue: (seconds * 6) % 360,
         duration: 300,
-        easing: Easing.out(Easing.ease),
-      });
-      minuteRotation.value = withTiming(
-        (minutes * 6 + seconds * 0.1) % 360,
-        {
-          duration: 300,
-          easing: Easing.out(Easing.ease),
-        }
-      );
-      hourRotation.value = withTiming(
-        (hours * 30 + minutes * 0.5) % 360,
-        {
-          duration: 300,
-          easing: Easing.out(Easing.ease),
-        }
-      );
+        useNativeDriver: true,
+      }).start();
+
+      Animated.timing(minuteRotation, {
+        toValue: (minutes * 6 + seconds * 0.1) % 360,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+
+      Animated.timing(hourRotation, {
+        toValue: (hours * 30 + minutes * 0.5) % 360,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
     }, 1000);
 
     return () => clearInterval(interval);
   }, []);
-
-  const secondStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${secondRotation.value}deg` }],
-  }));
-
-  const minuteStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${minuteRotation.value}deg` }],
-  }));
-
-  const hourStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${hourRotation.value}deg` }],
-  }));
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', {
@@ -117,12 +98,53 @@ export default function ClockScreen() {
               );
             })}
 
-            <Animated.View style={[styles.hand, styles.hourHand, hourStyle]} />
             <Animated.View
-              style={[styles.hand, styles.minuteHand, minuteStyle]}
+              style={[
+                styles.hand,
+                styles.hourHand,
+                {
+                  transform: [
+                    {
+                      rotate: hourRotation.interpolate({
+                        inputRange: [0, 360],
+                        outputRange: ['0deg', '360deg'],
+                      }),
+                    },
+                  ],
+                },
+              ]}
             />
             <Animated.View
-              style={[styles.hand, styles.secondHand, secondStyle]}
+              style={[
+                styles.hand,
+                styles.minuteHand,
+                {
+                  transform: [
+                    {
+                      rotate: minuteRotation.interpolate({
+                        inputRange: [0, 360],
+                        outputRange: ['0deg', '360deg'],
+                      }),
+                    },
+                  ],
+                },
+              ]}
+            />
+            <Animated.View
+              style={[
+                styles.hand,
+                styles.secondHand,
+                {
+                  transform: [
+                    {
+                      rotate: secondRotation.interpolate({
+                        inputRange: [0, 360],
+                        outputRange: ['0deg', '360deg'],
+                      }),
+                    },
+                  ],
+                },
+              ]}
             />
 
             <View style={styles.centerDot} />

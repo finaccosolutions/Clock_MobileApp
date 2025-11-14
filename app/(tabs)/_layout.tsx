@@ -15,16 +15,17 @@ export default function TabLayout() {
           backgroundColor: '#1F2937',
           borderTopColor: '#374151',
           borderTopWidth: 1,
-          paddingBottom: Math.max(insets.bottom, 8),
-          paddingTop: 8,
-          height: 70 + insets.bottom,
-          paddingLeft: insets.left,
-          paddingRight: insets.right,
+          paddingBottom: Math.max(insets.bottom, 4),
+          paddingTop: 4,
+          height: 60 + insets.bottom,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 10,
           fontWeight: '600',
-          marginTop: 4,
+          marginTop: 2,
+        },
+        tabBarIconStyle: {
+          marginTop: 2,
         },
       }}>
       <Tabs.Screen

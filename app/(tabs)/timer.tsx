@@ -4,16 +4,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   Dimensions,
+  Animated,
 } from 'react-native';
 import { useState, useEffect, useRef } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Play, Pause, RotateCcw } from 'lucide-react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
 const TIMER_SIZE = Math.min(width * 0.7, 280);
@@ -25,7 +21,7 @@ export default function TimerScreen() {
   const [isRunning, setIsRunning] = useState(false);
   const [totalSeconds, setTotalSeconds] = useState(300);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const progress = useSharedValue(0);
+  const progress = useRef(new Animated.Value(0)).current;
 
   const currentSeconds = minutes * 60 + seconds;
 
@@ -57,15 +53,12 @@ export default function TimerScreen() {
 
   useEffect(() => {
     const progressValue = totalSeconds > 0 ? currentSeconds / totalSeconds : 0;
-    progress.value = withTiming(progressValue, { duration: 300 });
+    Animated.timing(progress, {
+      toValue: progressValue,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
   }, [currentSeconds, totalSeconds]);
-
-  const progressStyle = useAnimatedStyle(() => {
-    const angle = progress.value * 360;
-    return {
-      transform: [{ rotate: `${angle}deg` }],
-    };
-  });
 
   const handlePlayPause = () => {
     if (currentSeconds > 0) {
@@ -101,7 +94,19 @@ export default function TimerScreen() {
           <View style={styles.progressCircle}>
             <View style={styles.progressBackground} />
             <Animated.View
-              style={[styles.progressFill, progressStyle]}
+              style={[
+                styles.progressFill,
+                {
+                  transform: [
+                    {
+                      rotate: progress.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ['0deg', '360deg'],
+                      }),
+                    },
+                  ],
+                },
+              ]}
             />
             <View style={styles.timerContent}>
               {!isRunning && currentSeconds === minutes * 60 ? (

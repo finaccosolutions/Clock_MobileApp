@@ -1,15 +1,34 @@
 {
   "expo": {
-    "name": "bolt-expo-nativewind",
-    "slug": "bolt-expo-nativewind",
+    "name": "World Clock",
+    "slug": "world-clock-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "primaryColor": "#1E293B",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.worldclock.app"
+    },
+    "android": {
+      "package": "com.worldclock.app",
+      "versionCode": 1,
+      "icon": "./assets/images/icon.png",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#1E293B"
+      },
+      "permissions": ["INTERNET"],
+      "intentFilters": [
+        {
+          "action": "android.intent.action.MAIN",
+          "category": "android.intent.category.LAUNCHER"
+        }
+      ]
     },
     "web": {
       "bundler": "metro",
